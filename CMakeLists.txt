@@ -83,7 +83,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "QNX")
     set(EXPORTSYMBOLS "-Wl,-export-dynamic -Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/exportmap.gcc")
     set(NO_DEPRECATED "")
     set(OPTIMIZE "")
-    set(OS_CXX_FLAGS "-D_GLIBCXX_USE_NANOSLEEP -lsocket -O -Wall -Wextra -Wformat -Wformat-security -Wconversion -fexceptions -fstrict-aliasing -fstack-protector-strong -fasynchronous-unwind-tables -fno-omit-frame-pointer -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security -fPIE -pie -Wl,-z,relro,-z,now")
+    set(OS_CXX_FLAGS "-D_GLIBCXX_USE_NANOSLEEP -O -Wall -Wextra -Wformat -Wformat-security -Wconversion -fexceptions -fstrict-aliasing -fstack-protector-strong -fasynchronous-unwind-tables -fno-omit-frame-pointer -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security -fPIE -pie -Wl,-z,relro,-z,now")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "QNX")
 
 # Signal handling
@@ -122,9 +122,10 @@ IF(DLT_FOUND)
      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_DLT")
 ENDIF(DLT_FOUND)
 
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "QNX")
 # SystemD
 pkg_check_modules(SystemD "libsystemd")
-
+endif (NOT ${CMAKE_SYSTEM_NAME} MATCHES "QNX")
 if(NOT SystemD_FOUND)
 MESSAGE( STATUS "Systemd was not found, watchdog disabled!")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITHOUT_SYSTEMD")

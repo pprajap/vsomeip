@@ -9,7 +9,7 @@
 #include <iostream>
 #include <boost/log/exceptions.hpp>
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(QNX)
 #include <dlfcn.h>
 #include <sys/syscall.h>
 #endif
@@ -315,7 +315,7 @@ bool application_impl::init() {
 }
 
 void application_impl::start() {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(QNX)
     if (getpid() != static_cast<pid_t>(syscall(SYS_gettid))) {
         // only set threadname if calling thread isn't the main thread
         std::stringstream s;
@@ -375,30 +375,30 @@ void application_impl::start() {
             routing_->start();
 
         for (size_t i = 0; i < io_thread_count - 1; i++) {
-            std::shared_ptr<std::thread> its_thread
-                = std::make_shared<std::thread>([this, i, io_thread_nice_level] {
-                    VSOMEIP_INFO << "io thread id from application: "
-                            << std::hex << std::setw(4) << std::setfill('0')
-                            << client_ << " (" << name_ << ") is: " << std::hex
-                            << std::this_thread::get_id()
-                    #ifndef _WIN32
-                            << " TID: " << std::dec << static_cast<int>(syscall(SYS_gettid))
-                    #endif
-                            ;
-                    #ifndef _WIN32
-                        {
-                            std::stringstream s;
-                            s << std::hex << std::setw(4) << std::setfill('0')
-                                << client_ << "_io" << std::setw(2)
-                                << std::setfill('0') << i+1;
-                            pthread_setname_np(pthread_self(),s.str().c_str());
-                        }
-                        if ((VSOMEIP_IO_THREAD_NICE_LEVEL != io_thread_nice_level) && (io_thread_nice_level != nice(io_thread_nice_level))) {
-                            VSOMEIP_WARNING << "nice(" << io_thread_nice_level << ") failed " << errno << " for " << std::this_thread::get_id();
-                        }
-                    #endif
+            std::shared_ptr<std::thread> its_thread = std::make_shared<std::thread>(
+                [this, i, io_thread_nice_level] {
+                    VSOMEIP_INFO << "io thread id from application: " << std::hex << std::setw(4)
+                                 << std::setfill('0') << client_ << " (" << name_
+                                 << ") is: " << std::hex << std::this_thread::get_id()
+#if !defined(_WIN32) && !defined(QNX)
+                                 << " TID: " << std::dec << static_cast<int>(syscall(SYS_gettid))
+#endif
+                        ;
+#ifndef _WIN32
+                    {
+                        std::stringstream s;
+                        s << std::hex << std::setw(4) << std::setfill('0') << client_ << "_io"
+                          << std::setw(2) << std::setfill('0') << i + 1;
+                        pthread_setname_np(pthread_self(), s.str().c_str());
+                    }
+                    if ((VSOMEIP_IO_THREAD_NICE_LEVEL != io_thread_nice_level)
+                        && (io_thread_nice_level != nice(io_thread_nice_level))) {
+                        VSOMEIP_WARNING << "nice(" << io_thread_nice_level << ") failed " << errno
+                                        << " for " << std::this_thread::get_id();
+                    }
+#endif
                     try {
-                      io_.run();
+                        io_.run();
 #ifndef _WIN32
                     } catch (const boost::log::v2_mt_posix::system_error &e) {
                         std::cerr << "catched boost::log system_error in I/O thread" << std::endl;
@@ -407,7 +407,7 @@ void application_impl::start() {
                         VSOMEIP_ERROR << "application_impl::start() "
                                 "catched exception: " << e.what();
                     }
-                  });
+                });
             io_threads_.insert(its_thread);
         }
     }
@@ -429,13 +429,13 @@ void application_impl::start() {
     app_counter_mutex__.lock();
     app_counter__++;
     app_counter_mutex__.unlock();
-    VSOMEIP_INFO << "io thread id from application: "
-            << std::hex << std::setw(4) << std::setfill('0') << client_ << " ("
-            << name_ << ") is: " << std::hex << std::this_thread::get_id()
-#ifndef _WIN32
-            << " TID: " << std::dec << static_cast<int>(syscall(SYS_gettid))
+    VSOMEIP_INFO << "io thread id from application: " << std::hex << std::setw(4)
+                 << std::setfill('0') << client_ << " (" << name_ << ") is: " << std::hex
+                 << std::this_thread::get_id()
+#if !defined(_WIN32) && !defined(QNX)
+                 << " TID: " << std::dec << static_cast<int>(syscall(SYS_gettid))
 #endif
-    ;
+        ;
 #ifndef _WIN32
     if ((VSOMEIP_IO_THREAD_NICE_LEVEL != io_thread_nice_level) && (io_thread_nice_level != nice(io_thread_nice_level))) {
         VSOMEIP_WARNING << "nice(" << io_thread_nice_level << ") failed " << errno << " for " << std::this_thread::get_id();
@@ -1618,13 +1618,12 @@ void application_impl::main_dispatch() {
     }
 #endif
     const std::thread::id its_id = std::this_thread::get_id();
-    VSOMEIP_INFO << "main dispatch thread id from application: "
-            << std::hex << std::setw(4) << std::setfill('0') << client_ << " ("
-            << name_ << ") is: " << std::hex << its_id
-#ifndef _WIN32
-            << " TID: " << std::dec << static_cast<int>(syscall(SYS_gettid))
+    VSOMEIP_INFO << "main dispatch thread id from application: " << std::hex << std::setw(4)
+                 << std::setfill('0') << client_ << " (" << name_ << ") is: " << std::hex << its_id
+#if !defined(_WIN32) && !defined(QNX)
+                 << " TID: " << std::dec << static_cast<int>(syscall(SYS_gettid))
 #endif
-            ;
+        ;
     std::unique_lock<std::mutex> its_lock(handlers_mutex_);
     while (is_dispatching_) {
         if (handlers_.empty() || !is_active_dispatcher(its_id)) {
@@ -1671,13 +1670,12 @@ void application_impl::dispatch() {
     }
 #endif
     const std::thread::id its_id = std::this_thread::get_id();
-    VSOMEIP_INFO << "dispatch thread id from application: "
-            << std::hex << std::setw(4) << std::setfill('0') << client_ << " ("
-            << name_ << ") is: " << std::hex << its_id
-#ifndef _WIN32
-            << " TID: " << std::dec << static_cast<int>(syscall(SYS_gettid))
+    VSOMEIP_INFO << "dispatch thread id from application: " << std::hex << std::setw(4)
+                 << std::setfill('0') << client_ << " (" << name_ << ") is: " << std::hex << its_id
+#if !defined(_WIN32) && !defined(QNX)
+                 << " TID: " << std::dec << static_cast<int>(syscall(SYS_gettid))
 #endif
-            ;
+        ;
     std::unique_lock<std::mutex> its_lock(handlers_mutex_);
     while (is_active_dispatcher(its_id)) {
         if (is_dispatching_ && handlers_.empty()) {
@@ -1954,13 +1952,13 @@ void application_impl::clear_all_handler() {
 }
 
 void application_impl::shutdown() {
-    VSOMEIP_INFO << "shutdown thread id from application: "
-            << std::hex << std::setw(4) << std::setfill('0') << client_ << " ("
-            << name_ << ") is: " << std::hex << std::this_thread::get_id()
-#ifndef _WIN32
-            << " TID: " << std::dec << static_cast<int>(syscall(SYS_gettid))
+    VSOMEIP_INFO << "shutdown thread id from application: " << std::hex << std::setw(4)
+                 << std::setfill('0') << client_ << " (" << name_ << ") is: " << std::hex
+                 << std::this_thread::get_id()
+#if !defined(_WIN32) && !defined(QNX)
+                 << " TID: " << std::dec << static_cast<int>(syscall(SYS_gettid))
 #endif
-    ;
+        ;
 #ifndef _WIN32
     boost::asio::detail::posix_signal_blocker blocker;
     {

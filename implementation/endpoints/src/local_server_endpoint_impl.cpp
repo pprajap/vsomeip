@@ -19,7 +19,7 @@
 #include "../../configuration/include/configuration.hpp"
 
 // Credentials
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(QNX)
 #include "../include/credentials.hpp"
 #endif
 
@@ -47,7 +47,7 @@ local_server_endpoint_impl::local_server_endpoint_impl(
     acceptor_.listen(boost::asio::socket_base::max_connections, ec);
     boost::asio::detail::throw_error(ec, "acceptor listen");
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(QNX)
     if (chmod(_local.path().c_str(), static_cast<mode_t>(_mode)) == -1) {
         VSOMEIP_ERROR << __func__ << ": chmod: " << strerror(errno);
     }
@@ -74,13 +74,13 @@ local_server_endpoint_impl::local_server_endpoint_impl(
    acceptor_.assign(_local.protocol(), native_socket, ec);
    boost::asio::detail::throw_error(ec, "acceptor assign native socket");
 
-#ifndef _WIN32
-    if (chmod(_local.path().c_str(), static_cast<mode_t>(_mode)) == -1) {
+#if !defined(_WIN32) && !defined(QNX)
+   if (chmod(_local.path().c_str(), static_cast<mode_t>(_mode)) == -1) {
        VSOMEIP_ERROR << __func__ << ": chmod: " << strerror(errno);
-    }
-    if (_host->get_configuration()->is_security_enabled()) {
-        credentials::activate_credentials(acceptor_.native_handle());
-    }
+   }
+   if (_host->get_configuration()->is_security_enabled()) {
+       credentials::activate_credentials(acceptor_.native_handle());
+   }
 #endif
 }
 
@@ -242,7 +242,7 @@ void local_server_endpoint_impl::accept_cbk(
     }
 
     if (!_error) {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(QNX)
         auto its_host = host_.lock();
         client_t client = 0;
         if (its_host) {
@@ -305,7 +305,7 @@ void local_server_endpoint_impl::accept_cbk(
                     std::lock_guard<std::mutex> its_lock(connections_mutex_);
                     connections_[remote] = _connection;
                 }
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(QNX)
                 {
                     std::lock_guard<std::mutex> its_lock(client_connections_mutex_);
                     client_connections_[client] = _connection;
