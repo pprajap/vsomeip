@@ -6,7 +6,7 @@
 #ifndef VSOMEIP_NETLINK_CONNECTOR_HPP
 #define VSOMEIP_NETLINK_CONNECTOR_HPP
 
-#if !defined(_WIN32) && !defined(QNX)
+#if !defined(_WIN32) && !defined(__QNX__)
 
 #include <sys/socket.h>
 #include <linux/netlink.h>
