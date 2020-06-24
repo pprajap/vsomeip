@@ -52,10 +52,10 @@ endforeach ()
 # Set a default build type if none was specified
 set(default_build_type "RelWithDebInfo")
 if(NOT CMAKE_BUILD_TYPE)
-  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+    message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+    set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
+    # Set the possible values of build type for cmake-gui
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 # OS
@@ -88,12 +88,12 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "QNX")
 
 # Signal handling
 if (ENABLE_SIGNAL_HANDLING)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVSOMEIP_ENABLE_SIGNAL_HANDLING")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVSOMEIP_ENABLE_SIGNAL_HANDLING")
 endif ()
 
 include_directories(
-    "interface" 
-)
+    "interface"
+    )
 
 # Threads
 find_package(Threads REQUIRED)
@@ -103,43 +103,48 @@ find_package( Boost 1.55 COMPONENTS system thread log REQUIRED )
 include_directories( ${Boost_INCLUDE_DIR} )
 
 if(Boost_FOUND)
-  if(Boost_LIBRARY_DIR)
-    MESSAGE( STATUS "Boost_LIBRARY_DIR not empty using it: ${Boost_LIBRARY_DIR}" )
-  else()
-    if(BOOST_LIBRARYDIR)
-      MESSAGE( STATUS "Boost_LIBRARY_DIR empty but BOOST_LIBRARYDIR is set setting Boost_LIBRARY_DIR to: ${BOOST_LIBRARYDIR}" )
-      set(Boost_LIBRARY_DIR ${BOOST_LIBRARYDIR})
+    if(Boost_LIBRARY_DIR)
+        MESSAGE( STATUS "Boost_LIBRARY_DIR not empty using it: ${Boost_LIBRARY_DIR}" )
+    else()
+        if(BOOST_LIBRARYDIR)
+            MESSAGE( STATUS "Boost_LIBRARY_DIR empty but BOOST_LIBRARYDIR is set setting Boost_LIBRARY_DIR to: ${BOOST_LIBRARYDIR}" )
+            set(Boost_LIBRARY_DIR ${BOOST_LIBRARYDIR})
+        endif()
     endif()
-  endif()
 else()
-  MESSAGE( STATUS "Boost was not found!")
+    MESSAGE( STATUS "Boost was not found!")
 endif()
 
 # DLT
 find_package(PkgConfig)
 pkg_check_modules(DLT "automotive-dlt >= 2.11")
 IF(DLT_FOUND) 
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_DLT")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_DLT")
 ENDIF(DLT_FOUND)
 
 if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "QNX")
-# SystemD
-pkg_check_modules(SystemD "libsystemd")
+    # SystemD
+    pkg_check_modules(SystemD "libsystemd")
 endif (NOT ${CMAKE_SYSTEM_NAME} MATCHES "QNX")
 if(NOT SystemD_FOUND)
-MESSAGE( STATUS "Systemd was not found, watchdog disabled!")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITHOUT_SYSTEMD")
+    MESSAGE( STATUS "Systemd was not found, watchdog disabled!")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITHOUT_SYSTEMD")
 endif(NOT SystemD_FOUND)
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "QNX")
+    include_directories(
+        include
+        )
+endif (${CMAKE_SYSTEM_NAME} MATCHES "QNX")
+
 include_directories(
-    include
     implementation/helper
     ${DLT_INCLUDE_DIRS}
-)
+    )
 
 link_directories(
     ${DLT_LIBDIR}
-)
+    )
 
 # Base library
 file(GLOB vsomeip_SRC
@@ -151,19 +156,19 @@ file(GLOB vsomeip_SRC
     "implementation/runtime/src/*.cpp"
     "implementation/utility/src/*.cpp"
     "implementation/plugin/src/*.cpp"
-)
+    )
 
 file(GLOB_RECURSE vsomeip_e2e_SRC
     "implementation/e2e_protection/src/*.cpp"
-)
+    )
 
 list(SORT vsomeip_SRC)
 list(SORT vsomeip_e2e_SRC)
 
 if (${VSOMEIP_HOTFIX_VERSION} EQUAL 0)
-add_definitions(-DVSOMEIP_VERSION="${VSOMEIP_VERSION}")
+    add_definitions(-DVSOMEIP_VERSION="${VSOMEIP_VERSION}")
 else()
-add_definitions(-DVSOMEIP_VERSION="${VSOMEIP_VERSION}.${VSOMEIP_HOTFIX_VERSION}")
+    add_definitions(-DVSOMEIP_VERSION="${VSOMEIP_VERSION}.${VSOMEIP_HOTFIX_VERSION}")
 endif()
 
 if (MSVC)
@@ -198,7 +203,7 @@ target_link_libraries(vsomeip PRIVATE ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBRARY}
 # Configuration library
 file(GLOB vsomeip-cfg_SRC
     "implementation/configuration/src/*.cpp"
-)
+    )
 list(SORT vsomeip-cfg_SRC)
 
 add_library(vsomeip-cfg SHARED ${vsomeip-cfg_SRC})
@@ -208,7 +213,7 @@ target_link_libraries(vsomeip-cfg vsomeip ${Boost_LIBRARIES} ${USE_RT} ${DL_LIBR
 # Service-Discovery library
 file(GLOB vsomeip-sd_SRC
     "implementation/service_discovery/src/*.cpp"
-)
+    )
 list(SORT vsomeip-sd_SRC)
 
 add_library(vsomeip-sd SHARED ${vsomeip-sd_SRC})
@@ -230,24 +235,24 @@ set(EXAMPLE_CONFIG_FILES
     "config/vsomeip-tcp-service.json"
     "config/vsomeip-udp-client.json"
     "config/vsomeip-udp-service.json"
-)
+    )
 
 ###################################################################################################
 set (VSOMEIP_DIAGNOSIS_ADDRESS "0x00")
 if (DIAGNOSIS_ADDRESS)
-set (VSOMEIP_DIAGNOSIS_ADDRESS ${DIAGNOSIS_ADDRESS})
+    set (VSOMEIP_DIAGNOSIS_ADDRESS ${DIAGNOSIS_ADDRESS})
 endif ()
 set (VSOMEIP_UNICAST_ADDRESS "127.0.0.1")
 if (UNICAST_ADDRESS)
-set (VSOMEIP_UNICAST_ADDRESS ${UNICAST_ADDRESS})
+    set (VSOMEIP_UNICAST_ADDRESS ${UNICAST_ADDRESS})
 endif ()
 set (VSOMEIP_ROUTING "vsomeipd")
 if (ROUTING)
-set (VSOMEIP_ROUTING ${ROUTING})
+    set (VSOMEIP_ROUTING ${ROUTING})
 endif ()
 set (VSOMEIP_ROUTING_READY_MESSAGE "SOME/IP routing ready.")
 if (ROUTING_READY_MESSAGE)
-set (VSOMEIP_ROUTING_READY_MESSAGE ${ROUTING_READY_MESSAGE})
+    set (VSOMEIP_ROUTING_READY_MESSAGE ${ROUTING_READY_MESSAGE})
 endif ()
 message("Predefined unicast address: ${VSOMEIP_UNICAST_ADDRESS}")
 message("Predefined diagnosis address: ${VSOMEIP_DIAGNOSIS_ADDRESS}")
@@ -266,30 +271,30 @@ foreach ( file ${vsomeip_INCLUDE} )
 endforeach()
 
 install (
-    TARGETS vsomeip 
+    TARGETS vsomeip
     # IMPORTANT: Add the vsomeip library to the "export-set"
     EXPORT vsomeipTargets
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT
     LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT
     ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
     COMPONENT dev
-)
+    )
 
 install (
     TARGETS vsomeip-cfg
     LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-)
+    )
 
 install (
     TARGETS vsomeip-sd
     LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
-)
+    )
 
 install (
-  FILES ${EXAMPLE_CONFIG_FILES} DESTINATION etc/vsomeip COMPONENT config
-)
+    FILES ${EXAMPLE_CONFIG_FILES} DESTINATION etc/vsomeip COMPONENT config
+    )
 
 # Add all targets to the build-tree export set
 export (TARGETS vsomeip FILE "${PROJECT_BINARY_DIR}/vsomeipTargets.cmake")
@@ -314,9 +319,9 @@ configure_file (vsomeipConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/vsomeipConf
 
 # confugure internal.hpp for correct version number
 configure_file (
-   "${PROJECT_SOURCE_DIR}/implementation/configuration/include/internal.hpp.in"
-   "${PROJECT_SOURCE_DIR}/implementation/configuration/include/internal.hpp"
-)
+    "${PROJECT_SOURCE_DIR}/implementation/configuration/include/internal.hpp.in"
+    "${PROJECT_SOURCE_DIR}/implementation/configuration/include/internal.hpp"
+    )
 
 # Install the vsomeipConfig.cmake and vsomeipConfigVersion.cmake
 install (
@@ -325,14 +330,14 @@ install (
     "${PROJECT_BINARY_DIR}/vsomeipConfigVersion.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}"
     COMPONENT dev
-)
+    )
 
 # Install the export set for use with the install-tree
 install (
     EXPORT vsomeipTargets
     DESTINATION "${INSTALL_CMAKE_DIR}"
     COMPONENT dev
-)
+    )
 
 ##############################################################################
 # build documentation
@@ -371,8 +376,8 @@ else()
 
     configure_file(documentation/doxygen.in ${PROJECT_BINARY_DIR}/Doxyfile @ONLY)
     add_custom_target(doxygen-doc
-                      COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
-                      SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
+        COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
+        SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
 
     add_dependencies(doc doxygen-doc)
 endif()
@@ -387,26 +392,26 @@ else()
     message("asciidoc found")
     message("source-highlight found")
     add_custom_command(TARGET doc
-                       POST_BUILD
-                       COMMAND asciidoc
-                               -a version=${VSOMEIP_VERSION}
-                               -b html
-                               -o documentation/vsomeipUserGuide.html
-                               ${PROJECT_BINARY_DIR}/../documentation/vsomeipUserGuide)
+        POST_BUILD
+        COMMAND asciidoc
+        -a version=${VSOMEIP_VERSION}
+        -b html
+        -o documentation/vsomeipUserGuide.html
+        ${PROJECT_BINARY_DIR}/../documentation/vsomeipUserGuide)
 endif()
 
 ##############################################################################
 # create pkg-config file
 if(NOT WIN32)
-        configure_file(vsomeip.pc.in ${PROJECT_BINARY_DIR}/vsomeip.pc @ONLY)
-        install(FILES ${PROJECT_BINARY_DIR}/vsomeip.pc DESTINATION lib/pkgconfig)
+    configure_file(vsomeip.pc.in ${PROJECT_BINARY_DIR}/vsomeip.pc @ONLY)
+    install(FILES ${PROJECT_BINARY_DIR}/vsomeip.pc DESTINATION lib/pkgconfig)
 endif()
 
 ##############################################################################
 # build daemon (Non-Windows only)
 if (NOT MSVC)
-add_custom_target( daemon )
-add_subdirectory( daemon )
+    add_custom_target( daemon )
+    add_subdirectory( daemon )
 endif()
 
 # build tools
@@ -421,9 +426,9 @@ add_subdirectory( examples EXCLUDE_FROM_ALL )
 # (Non-Windows only)
 if (NOT MSVC)
     if(EXISTS "${PROJECT_SOURCE_DIR}/plugins/CMakeLists.txt")
-       # build plugins if available
-       message("Plugins CMakeList.txt found: Build plugins")
-       add_subdirectory( plugins )
+        # build plugins if available
+        message("Plugins CMakeList.txt found: Build plugins")
+        add_subdirectory( plugins )
     endif()
 endif()
 
@@ -438,7 +443,7 @@ endif()
 # check for set environment variable
 if(${GTEST_ROOT} STREQUAL "n/a")
     message(STATUS "GTEST_ROOT is not defined. For building the tests the variable
-             GTEST_ROOT has to be defined. Tests can not be built.")
+        GTEST_ROOT has to be defined. Tests can not be built.")
     # early exit
     return()  # test can not be build -> make commands build_tests and check are not available
 else()
@@ -477,11 +482,11 @@ SET(TEST_IP_SLAVE "${TEST_IP_DEFAULT_VALUE}" CACHE STRING
     "The IP address of the interface which will act as test slave")
 
 if((${TEST_IP_MASTER} STREQUAL ${TEST_IP_DEFAULT_VALUE}) OR
-   (${TEST_IP_SLAVE}  STREQUAL ${TEST_IP_DEFAULT_VALUE}))
+        (${TEST_IP_SLAVE}  STREQUAL ${TEST_IP_DEFAULT_VALUE}))
     message(WARNING "TEST_IP_MASTER and/or TEST_IP_SLAVE isn't set. "
-                    "Only local tests will be runnable "
-                    "Please specify them via for example "
-                    "-DTEST_IP_MASTER=10.0.3.1 -DTEST_IP_SLAVE=10.0.3.125")
+        "Only local tests will be runnable "
+        "Please specify them via for example "
+        "-DTEST_IP_MASTER=10.0.3.1 -DTEST_IP_SLAVE=10.0.3.125")
 endif()
 
 SET(TEST_UID_DEFAULT_VALUE "123456789")
@@ -495,11 +500,11 @@ SET(TEST_SECURITY "ON" CACHE BOOL
     "Controls whether security tests should run or not")
 
 if((${TEST_UID} STREQUAL ${TEST_UID_DEFAULT_VALUE}) OR
-   (${TEST_GID}  STREQUAL ${TEST_GID_DEFAULT_VALUE}))
+        (${TEST_GID}  STREQUAL ${TEST_GID_DEFAULT_VALUE}))
     message(WARNING "TEST_UID and/or TEST_GID isn't set. "
-                    "Security Tests are not runnable "
-                    "Please specify them for example "
-                    "-DTEST_UID=1000 -DTEST_GID=1000")
+        "Security Tests are not runnable "
+        "Please specify them for example "
+        "-DTEST_UID=1000 -DTEST_GID=1000")
     SET(TEST_SECURITY "OFF")
 endif()
 
